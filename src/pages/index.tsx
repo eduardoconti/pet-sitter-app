@@ -73,26 +73,28 @@ export default function Home({ estados }: { estados: Props[] }) {
         <Typography variant="h4" align='center'>
           Encontre um Pet Sitter
         </Typography>
-
-        <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
-          <Grid item>
-            <Estado data={estados} onChange={(id: number) =>
-              setIdEstado(id)
-            } />
-          </Grid>
-          {
-            cidades.length ? <Grid item>
-              <Cidade data={cidades} onChange={(id?: number[]) =>
-                setIdCidade(id)
+        <Box display={'flex'} justifyContent={'center'}>
+          <Grid container spacing={1} sx={{ marginTop: theme.spacing(1), maxWidth: 225 * 3 }}>
+            <Grid item xs={12} lg={4}>
+              <Estado data={estados} onChange={(id: number) =>
+                setIdEstado(id)
               } />
-            </Grid> : null
-          }
-          {idEstado ?
-            <Grid item>
-              <ServicoFiltro onChange={(tipoServico: Servicos[]) => setTipoServico(tipoServico)} />
-            </Grid> : null}
+            </Grid>
+            {
+              cidades.length ? <Grid item xs={12} lg={4}>
+                <Cidade data={cidades} onChange={(id?: number[]) =>
+                  setIdCidade(id)
+                } />
+              </Grid> : null
+            }
+            {idEstado ?
+              <Grid item xs={12} lg={4}>
+                <ServicoFiltro onChange={(tipoServico: Servicos[]) => setTipoServico(tipoServico)} />
+              </Grid> : null}
 
-        </Grid>
+          </Grid>
+        </Box>
+
         {petSitters?.totalLinhas ?
           <Typography variant="body2" align='center' sx={{ marginTop: theme.spacing(1) }}>
             {`${petSitters.totalLinhas} Pet Sitter(s) encontrado(s)!`}
@@ -100,8 +102,8 @@ export default function Home({ estados }: { estados: Props[] }) {
 
         <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
           {petSitters?.data.map((petSitter) => {
-            return (<Grid item key={petSitter.id}>
-              <Card sx={{ width: 320 }}>
+            return (<Grid item xs={12} sm={6} lg={3} key={petSitter.id}>
+              <Card sx={{ minWidth: 280 }}>
                 <CardContent>
                   <Grid container spacing={1} >
                     <Grid item xs={2} display={'flex'} alignItems={`center`}>
@@ -184,7 +186,7 @@ function Servico({ servico }: { servico: Servicos }) {
 
 function Estado({ data, onChange }: { data: Props[], onChange: (value: number) => void }) {
   return (
-    <Stack sx={{ width: 220 }}>
+    <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
         id="estado"
         isOptionEqualToValue={(option, value) =>
@@ -214,7 +216,7 @@ function Estado({ data, onChange }: { data: Props[], onChange: (value: number) =
 
 function Cidade({ data, onChange }: { data: Props[], onChange: (value?: number[]) => void }) {
   return (
-    <Stack sx={{ width: 220 }}>
+    <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
         id="cidade"
         multiple
@@ -244,7 +246,7 @@ function Cidade({ data, onChange }: { data: Props[], onChange: (value?: number[]
 
 function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) {
   return (
-    <Stack sx={{ width: 220 }}>
+    <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
         id="cidade"
         size='small'
