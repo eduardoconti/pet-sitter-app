@@ -1,11 +1,11 @@
-import { api, ApiErrorResponse, ApiSuccessResponse } from '@/services/api/api';
-import jwt from 'jwt-decode';
+import { api, ApiErrorResponse, ApiSuccessResponse } from "@/services/api/api";
+import jwt from "jwt-decode";
 type SignInRequestData = {
   email: string;
   senha: string;
 };
 
-type SignInResponseData = { access_token: string } 
+type SignInResponseData = { access_token: string };
 
 type SignUpRequestData = {
   nome: string;
@@ -15,19 +15,19 @@ type SignUpRequestData = {
 
 export async function signInRequest({ email, senha }: SignInRequestData) {
   try {
-    const {data: {access_token}} = await api.post<SignInResponseData>(`/auth/login`, {
+    const {
+      data: { access_token },
+    } = await api.post<SignInResponseData>(`/auth/login`, {
       email,
       senha,
     });
 
-    const { nome, id } = jwt<{ nome: string; id: string }>(
-      access_token,
-    );
+    const { nome, id } = jwt<{ nome: string; id: string }>(access_token);
     return {
       user: {
         token: access_token,
         nome,
-        id
+        id,
       },
     };
   } catch (error: any) {
@@ -36,16 +36,12 @@ export async function signInRequest({ email, senha }: SignInRequestData) {
       Object.assign(response, error.response.data);
       throw response;
     }
-    throw new Error(error?.message ?? 'Internal server error');
+    throw new Error(error?.message ?? "Internal server error");
   } finally {
   }
 }
 
-export async function signUpRequest({
-  email,
-  senha,
-  nome,
-}: SignUpRequestData) {
+export async function signUpRequest({ email, senha, nome }: SignUpRequestData) {
   try {
     await api.post(`/users`, {
       email,
@@ -58,7 +54,7 @@ export async function signUpRequest({
       Object.assign(response, error.response.data);
       throw response;
     }
-    throw new Error(error?.message ?? 'Internal server error');
+    throw new Error(error?.message ?? "Internal server error");
   } finally {
   }
 }

@@ -181,7 +181,7 @@ const AppDrawer = ({ children }: React.PropsWithChildren) => {
           </IconButton>
           <MainLogo color="#FFF" size="40px" />
           <Typography variant="h6" marginLeft={1}>
-            Pet Sitter
+            Pet Sitters
           </Typography>
           <ColorMode />
           <UserDropdown />

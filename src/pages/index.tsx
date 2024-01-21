@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { Autocomplete, Avatar, Box, Card, CardActions, CardContent, Grid, Rating, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Card, CardActions, CardContent, Divider, Grid, Rating, Stack, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 // import { parseCookies } from 'nookies';
@@ -34,7 +34,7 @@ export default function Home({ estados }: { estados: Props[] }) {
   const theme = useTheme()
   const [idEstado, setIdEstado] = useState<number>()
   const [cidades, setCidades] = useState<Props[]>([])
-  const [idCidade, setIdCidade] = useState<number[] | undefined>()
+  const [idCidade, setIdCidade] = useState<number[]>([])
   const [petSitters, setPetSiters] = useState<Paginado<PetSitter>>()
   const [tipoServico, setTipoServico] = useState<Servicos[]>()
   const [numeroPagina, setNumeroPagina] = useState<number>(1)
@@ -46,6 +46,8 @@ export default function Home({ estados }: { estados: Props[] }) {
     }
     if (idEstado)
       getCidades(idEstado)
+
+    setIdCidade([])
   }, [idEstado])
 
   useEffect(() => {
@@ -64,27 +66,53 @@ export default function Home({ estados }: { estados: Props[] }) {
       listaPetSitters(idEstado, idCidade)
   }, [idEstado, idCidade, tipoServico])
 
+
   return (
     <>
       <Head>
         <title>Encontre um Pet Sitter</title>
       </Head>
       <Box>
-        <Typography variant="h4" align='center'>
-          Encontre um Pet Sitter
+        <Typography variant="h6" align='center'>
+          A Plataforma <b>Pet Sitters</b> é um local onde o Tutor pode encontrar alguém para cuidar de seu <b>Pet</b> em momentos de ausência.
+        </Typography>
+        <Typography variant="h6" align='center'>
+          {`Os Pet sitters podem oferecer serviços de `}
+          <MyTooltip title='O Pet sitter vai até a sua casa determinadas vezes alimentar o seu Pet.'>
+            <span>
+              <b>Alimentação</b>
+              <LuBeef size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+            </span>
+          </MyTooltip>{`, `}
+          <MyTooltip title='O Pet sitter tem um espaço reservado e apropriado para hospedar seu Pet.' >
+            <span>
+              <b>Hospedagem</b>
+              <GiDogHouse size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+            </span>
+          </MyTooltip>{` e `}
+          <MyTooltip title='O Pet sitter passeia com seu Pet por um tempo determinado.'>
+            <span>
+              <b>Passeio</b>
+              <FaDog size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+              .
+            </span>
+          </MyTooltip>
+        </Typography>
+        <Typography variant="h3" align='center' color={theme.palette.secondary.main} sx={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 1)', marginTop: theme.spacing(1) }}>
+          {`Encontre um Pet Sitter!`.toUpperCase()}
         </Typography>
         <Box display={'flex'} justifyContent={'center'}>
           <Grid container spacing={1} sx={{ marginTop: theme.spacing(1), maxWidth: 225 * 3 }}>
             <Grid item xs={12} lg={4}>
-              <Estado data={estados} onChange={(id: number) =>
+              <EstadoFiltro data={estados} onChange={(id: number) =>
                 setIdEstado(id)
               } />
             </Grid>
             {
               cidades.length ? <Grid item xs={12} lg={4}>
-                <Cidade data={cidades} onChange={(id?: number[]) =>
+                <CidadeFiltro data={cidades} onChange={(id: number[]) =>
                   setIdCidade(id)
-                } />
+                } selectedItems={idCidade} />
               </Grid> : null
             }
             {idEstado ?
@@ -95,18 +123,45 @@ export default function Home({ estados }: { estados: Props[] }) {
           </Grid>
         </Box>
 
-        {petSitters?.totalLinhas ?
+        <PetSitters petSitters={petSitters} idEstado={idEstado} />
+
+      </Box >
+    </>
+  );
+}
+
+
+function PetSitters({ petSitters, idEstado }: { petSitters?: Paginado<PetSitter>, idEstado?: number }) {
+  const theme = useTheme()
+
+  function Texto() {
+    if (idEstado) {
+      return (
+        petSitters?.totalLinhas ?
           <Typography variant="body2" align='center' sx={{ marginTop: theme.spacing(1) }}>
             {`${petSitters.totalLinhas} Pet Sitter(s) encontrado(s)!`}
-          </Typography> : null}
+          </Typography> : <Typography variant="h6" align='center' sx={{ marginTop: theme.spacing(1) }}>
+            {`Nenhum Pet Sitter encontrado!`}
+          </Typography>
 
-        <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
-          {petSitters?.data.map((petSitter) => {
-            return (<Grid item xs={12} sm={6} lg={3} key={petSitter.id}>
+      )
+    } else {
+      return <></>
+    }
+  }
+  return (
+    <>
+      <Texto />
+      <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
+        {petSitters?.data.map((petSitter) => {
+          const rating = Math.floor(Math.random() * (3 / 0.25 + 1)) * 0.25
+          console.log(rating)
+          return (
+            <Grid item xs={12} sm={6} lg={3} key={petSitter.id}>
               <Card sx={{ minWidth: 280 }}>
                 <CardContent>
-                  <Grid container spacing={1} >
-                    <Grid item xs={2} display={'flex'} alignItems={`center`}>
+                  <Grid container >
+                    <Grid item xs={2} display={'flex'} justifyContent={'center'} >
                       <Avatar sx={{ bgcolor: theme.palette.secondary.main }} aria-label="recipe">
                         {petSitter.nome[0].toUpperCase()}
                       </Avatar>
@@ -119,72 +174,94 @@ export default function Home({ estados }: { estados: Props[] }) {
                         Entrou em {new Date(petSitter.membroDesde).toLocaleDateString()}
                       </Typography>
                     </Grid>
-                    <Grid item xs={3} display={'flex'} justifyContent={'flex-end'}>
-                      <Rating
-                        name="simple-controlled"
-                        value={5}
-                        readOnly
-                        size='small'
-                        max={3}
-                      />
+                    <Grid item xs={3}>
+                      <Box display={'flex'} flexDirection={'column'}>
+                        <Box display={'flex'} justifyContent={'flex-end'}>
+                          <Tooltip title={rating} placement='top' slotProps={{
+                            popper: {
+                              modifiers: [
+                                {
+                                  name: 'offset',
+                                  options: {
+                                    offset: [0, -18],
+                                  },
+                                },
+                              ],
+                            },
+                          }}>
+                            <span>
+                              <Rating
+                                name="simple-controlled"
+                                value={rating}
+                                readOnly
+                                size='small'
+                                precision={0.25}
+                                max={3}
+                              /></span>
+                          </Tooltip>
+                        </Box>
+                        <Typography variant="subtitle2" align='right' color={theme.palette.text.secondary} >
+                          {`${Math.floor(Math.random() * (100 - 10 + 1)) + 10} avaliações`}
+                        </Typography>
+                      </Box>
                     </Grid>
                   </Grid>
                 </CardContent>
 
+                <Divider light ><Typography color={theme.palette.text.secondary}>Serviços prestados</Typography></Divider>
                 <CardActions disableSpacing>
                   <Grid container justifyContent={'center'} >
                     {petSitter.servicos.map((servico, i) => {
 
-                      return <Grid item key={i} xs={4} textAlign={'center'}>
-                        <Servico servico={servico} />
-                      </Grid>
+                      return (
+                        <Grid item key={i} xs={4} textAlign={'center'}>
+                          <ServicosPrestados servico={servico} />
+                        </Grid>)
                     })}
 
                   </Grid>
                 </CardActions>
               </Card>
             </Grid>)
-          })}
-        </Grid>
-
-      </Box >
+        })}
+      </Grid>
     </>
-  );
+  )
 }
 
-function Servico({ servico }: { servico: Servicos }) {
+function ServicosPrestados({ servico }: { servico: Servicos }) {
 
   const theme = useTheme()
 
   if (servico === 'H') {
     return (
-      <Tooltip title='Hospedagem'>
+      <ServicosTooltip title='Hospedagem' >
         <span>
           <GiDogHouse size={24} style={{ color: theme.palette.primary.main }} />
         </span>
-      </Tooltip>)
+      </ServicosTooltip>)
   }
 
   if (servico === 'A') {
     return (
-      <Tooltip title='Alimentação'>
+      <ServicosTooltip title='Alimentação'>
         <span>
           <LuBeef size={24} style={{ color: theme.palette.primary.main }} />
         </span>
-      </Tooltip>
+      </ServicosTooltip>
     )
   }
 
   return (
-    <Tooltip title='Passeio'>
+    <ServicosTooltip title='Passeio'>
       <span>
         <FaDog size={24} style={{ color: theme.palette.primary.main }} />
       </span>
-    </Tooltip>
+    </ServicosTooltip>
   )
 }
 
-function Estado({ data, onChange }: { data: Props[], onChange: (value: number) => void }) {
+function EstadoFiltro({ data, onChange }: { data: Props[], onChange: (value: number) => void }) {
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
@@ -202,7 +279,7 @@ function Estado({ data, onChange }: { data: Props[], onChange: (value: number) =
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Selecione seu Estado"
+            label="Estado"
             InputProps={{
               ...params.InputProps,
               type: 'search',
@@ -214,7 +291,7 @@ function Estado({ data, onChange }: { data: Props[], onChange: (value: number) =
   );
 }
 
-function Cidade({ data, onChange }: { data: Props[], onChange: (value?: number[]) => void }) {
+function CidadeFiltro({ data, onChange, selectedItems }: { data: Props[], onChange: (value: number[]) => void, selectedItems: number[] }) {
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
@@ -223,6 +300,7 @@ function Cidade({ data, onChange }: { data: Props[], onChange: (value?: number[]
         isOptionEqualToValue={(option, value) =>
           option.id === value.id && option.nome === value.nome
         }
+        value={data.filter((item) => selectedItems.includes(item.id))}
         size='small'
         getOptionLabel={(e) => e.nome}
         options={data}
@@ -232,7 +310,7 @@ function Cidade({ data, onChange }: { data: Props[], onChange: (value?: number[]
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Selecione sua Cidade"
+            label="Cidade(s)"
             InputProps={{
               ...params.InputProps,
               type: 'search',
@@ -273,7 +351,7 @@ function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) 
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Selecione o(s) Servico(s)"
+            label="Serviço(s)"
             InputProps={{
               ...params.InputProps,
               type: 'search',
@@ -286,6 +364,38 @@ function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) 
   );
 }
 
+const MyTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} arrow classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.primary.main,
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.primary.main,
+  },
+}));
+
+const ServicosTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} arrow classes={{ popper: className }} slotProps={{
+    popper: {
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [0, -12],
+          },
+        },
+      ],
+    },
+  }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.primary.light,
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.primary.light,
+  },
+}));
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   // const { ['nextauth.token']: token } = parseCookies(ctx);

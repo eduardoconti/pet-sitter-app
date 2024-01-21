@@ -7,10 +7,10 @@ export function formatData(dataString: Date | string) {
 
   // Formata a data no formato "dd/mm/yy"
   return (
-    dia.toString().padStart(2, '0') +
-    '/' +
-    mes.toString().padStart(2, '0') +
-    '/' +
+    dia.toString().padStart(2, "0") +
+    "/" +
+    mes.toString().padStart(2, "0") +
+    "/" +
     ano
   );
 }
