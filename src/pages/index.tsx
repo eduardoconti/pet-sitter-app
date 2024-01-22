@@ -9,13 +9,14 @@ import { api } from '@/services/api/api';
 import { LuBeef } from "react-icons/lu";
 import { GiDogHouse } from "react-icons/gi";
 import { FaDog } from "react-icons/fa";
+import { MdCleaningServices } from "react-icons/md";
 
 type Props = {
   id: number,
   nome: string
 }
 
-type Servicos = 'A' | 'H' | 'P'
+type Servicos = 'A' | 'H' | 'P' | 'L'
 
 type PetSitter = {
   id: number,
@@ -72,7 +73,7 @@ export default function Home({ estados }: { estados: Props[] }) {
       <Head>
         <title>Encontre um Pet Sitter</title>
       </Head>
-      <Box>
+      <Box >
         <Typography variant="h6" align='center'>
           A Plataforma <b>Pet Sitters</b> é um local onde o Tutor pode encontrar alguém para cuidar de seu <b>Pet</b> em momentos de ausência.
         </Typography>
@@ -88,6 +89,12 @@ export default function Home({ estados }: { estados: Props[] }) {
             <span>
               <b>Hospedagem</b>
               <GiDogHouse size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+            </span>
+          </MyTooltip>{`, `}
+          <MyTooltip title='O Pet sitter vai até a sua casa determinadas vezes fazer a limpeza do ambiente do seu Pet.'>
+            <span>
+              <b>Limpeza</b>
+              <MdCleaningServices size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
             </span>
           </MyTooltip>{` e `}
           <MyTooltip title='O Pet sitter passeia com seu Pet por um tempo determinado.'>
@@ -124,8 +131,8 @@ export default function Home({ estados }: { estados: Props[] }) {
         </Box>
 
         <PetSitters petSitters={petSitters} idEstado={idEstado} />
-
       </Box >
+
     </>
   );
 }
@@ -155,18 +162,17 @@ function PetSitters({ petSitters, idEstado }: { petSitters?: Paginado<PetSitter>
       <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
         {petSitters?.data.map((petSitter) => {
           const rating = Math.floor(Math.random() * (3 / 0.25 + 1)) * 0.25
-          console.log(rating)
           return (
-            <Grid item xs={12} sm={6} lg={3} key={petSitter.id}>
-              <Card sx={{ minWidth: 280 }}>
+            <Grid item xs={12} md={6} lg={4} key={petSitter.id} >
+              <Card >
                 <CardContent>
-                  <Grid container >
-                    <Grid item xs={2} display={'flex'} justifyContent={'center'} >
+                  <Grid container>
+                    <Grid item xs={2} display={'flex'} justifyContent={'left'} >
                       <Avatar sx={{ bgcolor: theme.palette.secondary.main }} aria-label="recipe">
                         {petSitter.nome[0].toUpperCase()}
                       </Avatar>
                     </Grid>
-                    <Grid item xs={7} display={'flex'} flexDirection={`column`}>
+                    <Grid item xs={6} display={'flex'} flexDirection={`column`}>
                       <Typography variant="subtitle1" align='left'>
                         {petSitter.nome}
                       </Typography>
@@ -174,7 +180,7 @@ function PetSitters({ petSitters, idEstado }: { petSitters?: Paginado<PetSitter>
                         Entrou em {new Date(petSitter.membroDesde).toLocaleDateString()}
                       </Typography>
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={4}>
                       <Box display={'flex'} flexDirection={'column'}>
                         <Box display={'flex'} justifyContent={'flex-end'}>
                           <Tooltip title={rating} placement='top' slotProps={{
@@ -201,20 +207,23 @@ function PetSitters({ petSitters, idEstado }: { petSitters?: Paginado<PetSitter>
                           </Tooltip>
                         </Box>
                         <Typography variant="subtitle2" align='right' color={theme.palette.text.secondary} >
-                          {`${Math.floor(Math.random() * (100 - 10 + 1)) + 10} avaliações`}
+                          {`${Math.floor(Math.random() * (200 - 10 + 1)) + 10} avaliações`}
                         </Typography>
                       </Box>
                     </Grid>
                   </Grid>
                 </CardContent>
 
-                <Divider light ><Typography color={theme.palette.text.secondary}>Serviços prestados</Typography></Divider>
+                <Divider light >
+                  <Typography color={theme.palette.text.secondary} >Serviços prestados</Typography>
+                </Divider>
+
                 <CardActions disableSpacing>
                   <Grid container justifyContent={'center'} >
                     {petSitter.servicos.map((servico, i) => {
 
                       return (
-                        <Grid item key={i} xs={4} textAlign={'center'}>
+                        <Grid item key={i} xs={3} textAlign={'center'}>
                           <ServicosPrestados servico={servico} />
                         </Grid>)
                     })}
@@ -247,6 +256,16 @@ function ServicosPrestados({ servico }: { servico: Servicos }) {
       <ServicosTooltip title='Alimentação'>
         <span>
           <LuBeef size={24} style={{ color: theme.palette.primary.main }} />
+        </span>
+      </ServicosTooltip>
+    )
+  }
+
+  if (servico === 'L') {
+    return (
+      <ServicosTooltip title='Limpeza'>
+        <span>
+          <MdCleaningServices size={24} style={{ color: theme.palette.primary.main }} />
         </span>
       </ServicosTooltip>
     )
@@ -338,13 +357,18 @@ function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) 
           nome: 'Alimentacao'
         },
         {
+          tipo: 'H',
+          nome: 'Hospedagem'
+        },
+        {
+          tipo: 'L',
+          nome: 'Limpeza'
+        },
+        {
           tipo: 'P',
           nome: 'Passeio'
         },
-        {
-          tipo: 'H',
-          nome: 'Hospedagem'
-        }] as { tipo: Servicos, nome: string }[]}
+        ] as { tipo: Servicos, nome: string }[]}
         onChange={(_event, value) => {
           onChange(value.map(e => e.tipo))
         }}
