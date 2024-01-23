@@ -1,10 +1,30 @@
-import Head from 'next/head';
-import { Autocomplete, Avatar, Box, Card, CardActions, CardContent, Divider, Grid, Rating, Stack, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses, useTheme } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import Head from "next/head";
+import {
+  Autocomplete,
+  Avatar,
+  Box,
+  Card,
+  CardActions,
+  CardContent,
+  Divider,
+  Grid,
+  Pagination,
+  Paper,
+  Rating,
+  Stack,
+  TextField,
+  Tooltip,
+  TooltipProps,
+  Typography,
+  styled,
+  tooltipClasses,
+  useTheme,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
 
 // import { parseCookies } from 'nookies';
-import { GetServerSideProps } from 'next';
-import { api } from '@/services/api/api';
+import { GetServerSideProps } from "next";
+import { api } from "@/services/api/api";
 
 import { LuBeef } from "react-icons/lu";
 import { GiDogHouse } from "react-icons/gi";
@@ -12,275 +32,393 @@ import { FaDog } from "react-icons/fa";
 import { MdCleaningServices } from "react-icons/md";
 
 type Props = {
-  id: number,
-  nome: string
-}
+  id: number;
+  nome: string;
+};
 
-type Servicos = 'A' | 'H' | 'P' | 'L'
+type Servicos = "A" | "H" | "P" | "L";
 
 type PetSitter = {
-  id: number,
-  nome: string,
-  membroDesde: Date,
-  servicos: Servicos[]
+  id: number;
+  nome: string;
+  membroDesde: Date;
+  servicos: Servicos[];
+};
+
+export interface IFindPaginado<Resultado> extends IFiltroPaginado {
+  totalLinhas: number;
+  quantidadePaginas: number;
+  data: Resultado[];
 }
 
-type Paginado<T> = {
-
-  totalLinhas: number,
-  pagina: number,
-  data: T[]
+export interface IFiltroPaginado {
+  numeroPagina: number;
+  tamanhoPagina: number;
 }
+
 export default function Home({ estados }: { estados: Props[] }) {
-  const theme = useTheme()
-  const [idEstado, setIdEstado] = useState<number>()
-  const [cidades, setCidades] = useState<Props[]>([])
-  const [idCidade, setIdCidade] = useState<number[]>([])
-  const [petSitters, setPetSiters] = useState<Paginado<PetSitter>>()
-  const [tipoServico, setTipoServico] = useState<Servicos[]>()
-  const [numeroPagina, setNumeroPagina] = useState<number>(1)
+  const theme = useTheme();
+  const [idEstado, setIdEstado] = useState<number>();
+  const [cidades, setCidades] = useState<Props[]>([]);
+  const [idCidade, setIdCidade] = useState<number[]>([]);
+  const [petSitters, setPetSiters] = useState<IFindPaginado<PetSitter>>();
+  const [tipoServico, setTipoServico] = useState<Servicos[]>();
+  const [numeroPagina, setNumeroPagina] = useState<number>(1);
 
   useEffect(() => {
     async function getCidades(estado: number) {
-      const { data } = await api.get<Props[]>(`/localizacao/cidade/${estado}`)
-      setCidades(data)
+      const { data } = await api.get<Props[]>(`/localizacao/cidade/${estado}`);
+      setCidades(data);
     }
-    if (idEstado)
-      getCidades(idEstado)
-
-    setIdCidade([])
-  }, [idEstado])
+    if (idEstado) getCidades(idEstado);
+  }, [idEstado]);
 
   useEffect(() => {
     async function listaPetSitters(estado: number, cidade?: number[]) {
-      let url = `/pet-sitter/encontrar?numeroPagina=${numeroPagina}&idEstado=${estado}`
+      let url = `/pet-sitter/encontrar?numeroPagina=${numeroPagina}&idEstado=${estado}`;
       if (cidade) {
-        url += `&idCidade=${cidade.join(',')}`
+        url += `&idCidade=${cidade.join(",")}`;
       }
       if (tipoServico?.length) {
-        url += `&servicos=${tipoServico.join(',')}`
+        url += `&servicos=${tipoServico.join(",")}`;
       }
-      const { data } = await api.get<Paginado<PetSitter>>(url)
-      setPetSiters(data)
+      const { data } = await api.get<IFindPaginado<PetSitter>>(url);
+      setPetSiters(data);
     }
-    if (idEstado)
-      listaPetSitters(idEstado, idCidade)
-  }, [idEstado, idCidade, tipoServico])
-
+    if (idEstado) listaPetSitters(idEstado, idCidade);
+  }, [idEstado, idCidade, tipoServico, numeroPagina]);
 
   return (
     <>
       <Head>
         <title>Encontre um Pet Sitter</title>
       </Head>
-      <Box >
-        <Typography variant="h6" align='center'>
-          A Plataforma <b>Pet Sitters</b> é um local onde o Tutor pode encontrar alguém para cuidar de seu <b>Pet</b> em momentos de ausência.
+      <Box>
+        <Typography variant="h6" align="center">
+          A Plataforma <b>Pet Sitters</b> é um local onde o Tutor pode encontrar
+          alguém para cuidar de seu <b>Pet</b> em momentos de ausência.
         </Typography>
-        <Typography variant="h6" align='center'>
+        <Typography variant="h6" align="center">
           {`Os Pet sitters podem oferecer serviços de `}
-          <MyTooltip title='O Pet sitter vai até a sua casa determinadas vezes alimentar o seu Pet.'>
+          <MyTooltip title="O Pet sitter vai até a sua casa determinadas vezes alimentar o seu Pet.">
             <span>
               <b>Alimentação</b>
-              <LuBeef size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+              <LuBeef
+                size={24}
+                style={{
+                  color: theme.palette.primary.main,
+                  marginLeft: theme.spacing(1),
+                }}
+              />
             </span>
-          </MyTooltip>{`, `}
-          <MyTooltip title='O Pet sitter tem um espaço reservado e apropriado para hospedar seu Pet.' >
+          </MyTooltip>
+          {`, `}
+          <MyTooltip title="O Pet sitter tem um espaço reservado e apropriado para hospedar seu Pet.">
             <span>
               <b>Hospedagem</b>
-              <GiDogHouse size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+              <GiDogHouse
+                size={24}
+                style={{
+                  color: theme.palette.primary.main,
+                  marginLeft: theme.spacing(1),
+                }}
+              />
             </span>
-          </MyTooltip>{`, `}
-          <MyTooltip title='O Pet sitter vai até a sua casa determinadas vezes fazer a limpeza do ambiente do seu Pet.'>
+          </MyTooltip>
+          {`, `}
+          <MyTooltip title="O Pet sitter vai até a sua casa determinadas vezes fazer a limpeza do ambiente do seu Pet.">
             <span>
               <b>Limpeza</b>
-              <MdCleaningServices size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+              <MdCleaningServices
+                size={24}
+                style={{
+                  color: theme.palette.primary.main,
+                  marginLeft: theme.spacing(1),
+                }}
+              />
             </span>
-          </MyTooltip>{` e `}
-          <MyTooltip title='O Pet sitter passeia com seu Pet por um tempo determinado.'>
+          </MyTooltip>
+          {` e `}
+          <MyTooltip title="O Pet sitter passeia com seu Pet por um tempo determinado.">
             <span>
               <b>Passeio</b>
-              <FaDog size={24} style={{ color: theme.palette.primary.main, marginLeft: theme.spacing(1) }} />
+              <FaDog
+                size={24}
+                style={{
+                  color: theme.palette.primary.main,
+                  marginLeft: theme.spacing(1),
+                }}
+              />
               .
             </span>
           </MyTooltip>
         </Typography>
-        <Typography variant="h3" align='center' color={theme.palette.secondary.main} sx={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 1)', marginTop: theme.spacing(1) }}>
+        <Typography
+          variant="h3"
+          align="center"
+          color={theme.palette.secondary.main}
+          sx={{
+            textShadow: "2px 2px 2px rgba(0, 0, 0, 1)",
+            marginTop: theme.spacing(1),
+          }}
+        >
           {`Encontre um Pet Sitter!`.toUpperCase()}
         </Typography>
-        <Box display={'flex'} justifyContent={'center'}>
-          <Grid container spacing={1} sx={{ marginTop: theme.spacing(1), maxWidth: 225 * 3 }}>
+        <Box display={"flex"} justifyContent={"center"}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ marginTop: theme.spacing(1), maxWidth: 225 * 3 }}
+          >
             <Grid item xs={12} lg={4}>
-              <EstadoFiltro data={estados} onChange={(id: number) =>
-                setIdEstado(id)
-              } />
+              <EstadoFiltro
+                data={estados}
+                onChange={(id: number) => setIdEstado(id)}
+              />
             </Grid>
-            {
-              cidades.length ? <Grid item xs={12} lg={4}>
-                <CidadeFiltro data={cidades} onChange={(id: number[]) =>
-                  setIdCidade(id)
-                } selectedItems={idCidade} />
-              </Grid> : null
-            }
-            {idEstado ?
+            {cidades.length ? (
               <Grid item xs={12} lg={4}>
-                <ServicoFiltro onChange={(tipoServico: Servicos[]) => setTipoServico(tipoServico)} />
-              </Grid> : null}
-
+                <CidadeFiltro
+                  data={cidades}
+                  onChange={(id: number[]) => setIdCidade(id)}
+                  selectedItems={idCidade}
+                />
+              </Grid>
+            ) : null}
+            {idEstado ? (
+              <Grid item xs={12} lg={4}>
+                <ServicoFiltro
+                  onChange={(tipoServico: Servicos[]) =>
+                    setTipoServico(tipoServico)
+                  }
+                />
+              </Grid>
+            ) : null}
           </Grid>
         </Box>
 
-        <PetSitters petSitters={petSitters} idEstado={idEstado} />
-      </Box >
-
+        <PetSitters
+          petSitters={petSitters}
+          idEstado={idEstado}
+          onChange={(numeroPagina: number) => setNumeroPagina(numeroPagina)}
+        />
+      </Box>
     </>
   );
 }
 
-
-function PetSitters({ petSitters, idEstado }: { petSitters?: Paginado<PetSitter>, idEstado?: number }) {
-  const theme = useTheme()
+function PetSitters({
+  petSitters,
+  idEstado,
+  onChange,
+}: {
+  petSitters?: IFindPaginado<PetSitter>;
+  idEstado?: number;
+  onChange: (value: number) => void;
+}) {
+  const theme = useTheme();
 
   function Texto() {
     if (idEstado) {
-      return (
-        petSitters?.totalLinhas ?
-          <Typography variant="body2" align='center' sx={{ marginTop: theme.spacing(1) }}>
-            {`${petSitters.totalLinhas} Pet Sitter(s) encontrado(s)!`}
-          </Typography> : <Typography variant="h6" align='center' sx={{ marginTop: theme.spacing(1) }}>
-            {`Nenhum Pet Sitter encontrado!`}
-          </Typography>
-
-      )
+      return petSitters?.totalLinhas ? (
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: theme.spacing(1) }}
+        >
+          {`${petSitters.totalLinhas} Pet Sitter(s) encontrado(s)!`}
+        </Typography>
+      ) : (
+        <Typography
+          variant="h6"
+          align="center"
+          sx={{ marginTop: theme.spacing(1) }}
+        >
+          {`Nenhum Pet Sitter encontrado!`}
+        </Typography>
+      );
     } else {
-      return <></>
+      return <></>;
     }
   }
   return (
     <>
       <Texto />
-      <Grid container spacing={1} sx={{ marginTop: theme.spacing(1) }}>
+      <Grid
+        container
+        spacing={1}
+        sx={{ marginTop: theme.spacing(1) }}
+        justifyContent={"center"}
+        display={"flex"}
+      >
         {petSitters?.data.map((petSitter) => {
-          const rating = Math.floor(Math.random() * (3 / 0.25 + 1)) * 0.25
+          const rating = Math.floor(Math.random() * (3 / 0.25 + 1)) * 0.25;
           return (
-            <Grid item xs={12} md={6} lg={4} key={petSitter.id} >
-              <Card >
-                <CardContent>
-                  <Grid container>
-                    <Grid item xs={2} display={'flex'} justifyContent={'left'} >
-                      <Avatar sx={{ bgcolor: theme.palette.secondary.main }} aria-label="recipe">
-                        {petSitter.nome[0].toUpperCase()}
-                      </Avatar>
-                    </Grid>
-                    <Grid item xs={6} display={'flex'} flexDirection={`column`}>
-                      <Typography variant="subtitle1" align='left'>
-                        {petSitter.nome}
-                      </Typography>
-                      <Typography variant="subtitle2" align='left' color={theme.palette.text.secondary}>
-                        Entrou em {new Date(petSitter.membroDesde).toLocaleDateString()}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                      <Box display={'flex'} flexDirection={'column'}>
-                        <Box display={'flex'} justifyContent={'flex-end'}>
-                          <Tooltip title={rating} placement='top' slotProps={{
+            <Grid item xs={12} md={8} lg={7} key={petSitter.id}>
+              <Paper sx={{ padding: theme.spacing(2) }}>
+                <Grid container>
+                  <Grid
+                    item
+                    xs={2}
+                    md={1}
+                    display={"flex"}
+                    justifyContent={"left"}
+                  >
+                    <Avatar
+                      sx={{ bgcolor: theme.palette.secondary.main }}
+                      aria-label="recipe"
+                    >
+                      {petSitter.nome[0].toUpperCase()}
+                    </Avatar>
+                  </Grid>
+                  <Grid
+                    item
+                    xs={6}
+                    md={7}
+                    display={"flex"}
+                    flexDirection={`column`}
+                  >
+                    <Typography variant="subtitle1" align="left">
+                      {petSitter.nome}
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      align="left"
+                      color={theme.palette.text.secondary}
+                    >
+                      Entrou em{" "}
+                      {new Date(petSitter.membroDesde).toLocaleDateString()}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box display={"flex"} flexDirection={"column"}>
+                      <Box display={"flex"} justifyContent={"flex-end"}>
+                        <Tooltip
+                          title={rating}
+                          placement="top"
+                          slotProps={{
                             popper: {
                               modifiers: [
                                 {
-                                  name: 'offset',
+                                  name: "offset",
                                   options: {
                                     offset: [0, -18],
                                   },
                                 },
                               ],
                             },
-                          }}>
-                            <span>
-                              <Rating
-                                name="simple-controlled"
-                                value={rating}
-                                readOnly
-                                size='small'
-                                precision={0.25}
-                                max={3}
-                              /></span>
-                          </Tooltip>
-                        </Box>
-                        <Typography variant="subtitle2" align='right' color={theme.palette.text.secondary} >
-                          {`${Math.floor(Math.random() * (200 - 10 + 1)) + 10} avaliações`}
-                        </Typography>
+                          }}
+                        >
+                          <span>
+                            <Rating
+                              name="simple-controlled"
+                              value={rating}
+                              readOnly
+                              size="small"
+                              precision={0.25}
+                              max={3}
+                            />
+                          </span>
+                        </Tooltip>
                       </Box>
-                    </Grid>
+                      <Typography
+                        variant="subtitle2"
+                        align="right"
+                        color={theme.palette.text.secondary}
+                      >
+                        {`${
+                          Math.floor(Math.random() * (200 - 10 + 1)) + 10
+                        } avaliações`}
+                      </Typography>
+                    </Box>
                   </Grid>
-                </CardContent>
+                </Grid>
 
-                <Divider light >
-                  <Typography color={theme.palette.text.secondary} >Serviços prestados</Typography>
+                <Divider light>
+                  <Typography color={theme.palette.text.secondary}>
+                    Serviços prestados
+                  </Typography>
                 </Divider>
 
-                <CardActions disableSpacing>
-                  <Grid container justifyContent={'center'} >
-                    {petSitter.servicos.map((servico, i) => {
-
-                      return (
-                        <Grid item key={i} xs={3} textAlign={'center'}>
-                          <ServicosPrestados servico={servico} />
-                        </Grid>)
-                    })}
-
-                  </Grid>
-                </CardActions>
-              </Card>
-            </Grid>)
+                <Grid container justifyContent={"center"}>
+                  {petSitter.servicos.map((servico, i) => {
+                    return (
+                      <Grid item key={i} xs={3} textAlign={"center"}>
+                        <ServicosPrestados servico={servico} />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Paper>
+            </Grid>
+          );
         })}
+        {petSitters?.totalLinhas ? (
+          <Grid item xs={12} justifyContent={"center"} display={"flex"}>
+            <Pagination
+              count={petSitters.quantidadePaginas}
+              color="primary"
+              onChange={(_, value) => onChange(value)}
+            />
+          </Grid>
+        ) : null}
       </Grid>
     </>
-  )
+  );
 }
 
 function ServicosPrestados({ servico }: { servico: Servicos }) {
+  const theme = useTheme();
 
-  const theme = useTheme()
-
-  if (servico === 'H') {
+  if (servico === "H") {
     return (
-      <ServicosTooltip title='Hospedagem' >
+      <ServicosTooltip title="Hospedagem">
         <span>
           <GiDogHouse size={24} style={{ color: theme.palette.primary.main }} />
         </span>
-      </ServicosTooltip>)
+      </ServicosTooltip>
+    );
   }
 
-  if (servico === 'A') {
+  if (servico === "A") {
     return (
-      <ServicosTooltip title='Alimentação'>
+      <ServicosTooltip title="Alimentação">
         <span>
           <LuBeef size={24} style={{ color: theme.palette.primary.main }} />
         </span>
       </ServicosTooltip>
-    )
+    );
   }
 
-  if (servico === 'L') {
+  if (servico === "L") {
     return (
-      <ServicosTooltip title='Limpeza'>
+      <ServicosTooltip title="Limpeza">
         <span>
-          <MdCleaningServices size={24} style={{ color: theme.palette.primary.main }} />
+          <MdCleaningServices
+            size={24}
+            style={{ color: theme.palette.primary.main }}
+          />
         </span>
       </ServicosTooltip>
-    )
+    );
   }
 
   return (
-    <ServicosTooltip title='Passeio'>
+    <ServicosTooltip title="Passeio">
       <span>
         <FaDog size={24} style={{ color: theme.palette.primary.main }} />
       </span>
     </ServicosTooltip>
-  )
+  );
 }
 
-function EstadoFiltro({ data, onChange }: { data: Props[], onChange: (value: number) => void }) {
+function EstadoFiltro({
+  data,
+  onChange,
+}: {
+  data: Props[];
+  onChange: (value: number) => void;
+}) {
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
@@ -289,11 +427,11 @@ function EstadoFiltro({ data, onChange }: { data: Props[], onChange: (value: num
           option.id === value.id && option.nome === value.nome
         }
         disableClearable
-        size='small'
+        size="small"
         getOptionLabel={(e) => e.nome}
         options={data}
         onChange={(_event, value) => {
-          onChange(value.id)
+          onChange(value.id);
         }}
         renderInput={(params) => (
           <TextField
@@ -301,7 +439,7 @@ function EstadoFiltro({ data, onChange }: { data: Props[], onChange: (value: num
             label="Estado"
             InputProps={{
               ...params.InputProps,
-              type: 'search',
+              type: "search",
             }}
           />
         )}
@@ -310,7 +448,15 @@ function EstadoFiltro({ data, onChange }: { data: Props[], onChange: (value: num
   );
 }
 
-function CidadeFiltro({ data, onChange, selectedItems }: { data: Props[], onChange: (value: number[]) => void, selectedItems: number[] }) {
+function CidadeFiltro({
+  data,
+  onChange,
+  selectedItems,
+}: {
+  data: Props[];
+  onChange: (value: number[]) => void;
+  selectedItems: number[];
+}) {
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
@@ -320,11 +466,11 @@ function CidadeFiltro({ data, onChange, selectedItems }: { data: Props[], onChan
           option.id === value.id && option.nome === value.nome
         }
         value={data.filter((item) => selectedItems.includes(item.id))}
-        size='small'
+        size="small"
         getOptionLabel={(e) => e.nome}
         options={data}
         onChange={(_event, value) => {
-          onChange(value?.map(e => e.id))
+          onChange(value?.map((e) => e.id));
         }}
         renderInput={(params) => (
           <TextField
@@ -332,7 +478,7 @@ function CidadeFiltro({ data, onChange, selectedItems }: { data: Props[], onChan
             label="Cidade(s)"
             InputProps={{
               ...params.InputProps,
-              type: 'search',
+              type: "search",
             }}
           />
         )}
@@ -341,36 +487,43 @@ function CidadeFiltro({ data, onChange, selectedItems }: { data: Props[], onChan
   );
 }
 
-function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) {
+function ServicoFiltro({
+  onChange,
+}: {
+  onChange: (value: Servicos[]) => void;
+}) {
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
         id="cidade"
-        size='small'
+        size="small"
         multiple
         isOptionEqualToValue={(option, value) =>
           option.tipo === value.tipo && option.nome === value.nome
         }
         getOptionLabel={(e) => e.nome}
-        options={[{
-          tipo: 'A',
-          nome: 'Alimentacao'
-        },
-        {
-          tipo: 'H',
-          nome: 'Hospedagem'
-        },
-        {
-          tipo: 'L',
-          nome: 'Limpeza'
-        },
-        {
-          tipo: 'P',
-          nome: 'Passeio'
-        },
-        ] as { tipo: Servicos, nome: string }[]}
+        options={
+          [
+            {
+              tipo: "A",
+              nome: "Alimentacao",
+            },
+            {
+              tipo: "H",
+              nome: "Hospedagem",
+            },
+            {
+              tipo: "L",
+              nome: "Limpeza",
+            },
+            {
+              tipo: "P",
+              nome: "Passeio",
+            },
+          ] as { tipo: Servicos; nome: string }[]
+        }
         onChange={(_event, value) => {
-          onChange(value.map(e => e.tipo))
+          onChange(value.map((e) => e.tipo));
         }}
         renderInput={(params) => (
           <TextField
@@ -378,9 +531,8 @@ function ServicoFiltro({ onChange }: { onChange: (value: Servicos[]) => void }) 
             label="Serviço(s)"
             InputProps={{
               ...params.InputProps,
-              type: 'search',
+              type: "search",
             }}
-
           />
         )}
       />
@@ -400,18 +552,23 @@ const MyTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 const ServicosTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} arrow classes={{ popper: className }} slotProps={{
-    popper: {
-      modifiers: [
-        {
-          name: 'offset',
-          options: {
-            offset: [0, -12],
+  <Tooltip
+    {...props}
+    arrow
+    classes={{ popper: className }}
+    slotProps={{
+      popper: {
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, -12],
+            },
           },
-        },
-      ],
-    },
-  }} />
+        ],
+      },
+    }}
+  />
 ))(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
     color: theme.palette.primary.light,
@@ -437,7 +594,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   return {
     props: {
-      estados: data
+      estados: data,
     },
   };
 };
