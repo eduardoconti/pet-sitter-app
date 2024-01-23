@@ -495,7 +495,7 @@ function ServicoFiltro({
   return (
     <Stack sx={{ minWidth: 220 }}>
       <Autocomplete
-        id="cidade"
+        id="servico"
         size="small"
         multiple
         isOptionEqualToValue={(option, value) =>
